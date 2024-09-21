@@ -3,10 +3,14 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-24.05";
+    #nixvim-flake.url = "github:pete3n/nixvim-flake";
   };
 
-  outputs = {nixpkgs, ...}: let
-    inherit (nixpkgs.lib) genAttrs;
+  outputs = {
+    nixpkgs,
+    #nixvim-flake,
+    ...
+  }: let
     supportedSystems = [
       "x86_64-linux"
       "aarch64-linux"
@@ -16,33 +20,33 @@
 
     forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
   in {
-    packages = forAllSystems (
-      system:
-        import ./pkgs {
-          inherit system;
-          pkgs = nixpkgs.legacyPackages.${system};
-        }
-    );
-
     devShells = forAllSystems (
       system: let
         pkgs = import nixpkgs {
           inherit system;
         };
+        customPkgs = import ./pkgs {inherit pkgs;};
       in {
         default = pkgs.mkShell {
-          buildInputs = with pkgs;
+          #inputsFrom = [nixvim-flake.devShells.${system}.default];
+          buildInputs =
             [
-              python312
+              pkgs.python312Full
             ]
-            ++ (with python312Packages; [
-              magic
+            ++ (with pkgs.python312Packages; [
               beautifulsoup4
-              chromadb
-              ollama
               python_magic
               requests
+            ])
+            ++ (with customPkgs; [
+              mattsollamatools
+              chromadb
+              ollama
             ]);
+          shellHook = ''
+                  echo "Starting chromadb on port 8000"
+            docker run -d -p 8000:8000 -v chroma-data:/chromadb/data chromadb/chroma:0.4.24
+          '';
         };
       }
     );

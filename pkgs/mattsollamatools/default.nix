@@ -4,11 +4,11 @@
 }:
 python312Packages.buildPythonPackage rec {
   pname = "mattsollamatools";
-  version = "0.0.25";
+  version = "0.0.21";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "sha256-m0avc8Uus9FlbGUUI+vRHaWq3OFI8pMbiC7bbAAx93Q=";
+    sha256 = "sha256-ggprwckk3MSjkEM8kmKzyh/aO1Sub2xW9KPMiYLbtmE=";
   };
 
   doCheck = false;
@@ -19,7 +19,6 @@ python312Packages.buildPythonPackage rec {
   ];
 
   dependencies = with python312Packages; [
-    setuptools
-    wheel
+    nltk
   ];
 }
